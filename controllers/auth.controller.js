@@ -46,7 +46,14 @@ export const signUp = async(req, res, next) => {
             await session.abortTransaction();
         }
         session.endSession();
-        next(error);
+        // next(error);
+
+        // Ensure that no other response has been sent before calling next()
+        if (!res.headersSent) {
+            next(error);  // Call the next error handling middleware if the response has not been sent yet
+        } else {
+            console.error("Headers already sent, skipping next()...");
+        }
     } 
 
 
@@ -81,7 +88,14 @@ export const signIn = async(req, res, next) => {
             data: { token, user}    
         });
     } catch (error) {
-        next(error);
+        // next(error);
+
+        // Ensure that no other response has been sent before calling next()
+        if (!res.headersSent) {
+            next(error);  // Call the next error handling middleware if the response has not been sent yet
+        } else {
+            console.error("Headers already sent, skipping next()...");
+        }
     }
 }
 
