@@ -13,6 +13,6 @@ subscriptionRouter.delete('/:id', (req, res) => res.send({ title: 'Delete single
 // User specific subscription operations
 subscriptionRouter.get('/user/:id', (req, res) => res.send({ title: 'Get all subscriptions for a user'}));
 subscriptionRouter.put('/:id/cancel', (req, res) => res.send({ title: 'cancel the subscription'}))
-
+subscriptionRouter.get('/upcoming-renewals', (req, res) => res.send({ title: 'Get all upcoming renewals'}));    
 
 export default subscriptionRouter;
