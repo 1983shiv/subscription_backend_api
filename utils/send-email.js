@@ -4,8 +4,7 @@ import { EMAIL_USERNAME } from "../config/env.js";
 import { transporter } from "../config/nodemailer.js";
 
 export const sendReminderEmail = async ({ to, type, subscription }) => {
-    console.log('Sending reminders');
-
+    
     if(!to || !type) throw new Error("Missing required parameters");
 
     const template = emailTemplates.find((t) => t.label === type);
