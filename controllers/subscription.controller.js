@@ -3,7 +3,6 @@ import Subscription from "../models/subscription.model.js";
 import { SERVER_URL } from "../config/env.js"
 
 export const createSubscription = async (req, res, next) => {
-    console.log({user: req.user})
     try {
         const subscription = await Subscription.create({
             ...req.body,
@@ -28,7 +27,7 @@ export const createSubscription = async (req, res, next) => {
 
 export const getUserSubscriptions = async (req, res, next) => {
     try {
-        console.log({user: req.user, params: req.params})
+        // console.log({user: req.user, params: req.params})
         if(req.user.id !== req.params.id){
             const error = new Error("You are not the owner of this subscription");
             error.statusCode = 401;
