@@ -1,7 +1,7 @@
 # 👋 Hi, I’m Shiv Srivastava
 
-### A Full-Stack Developer from India
-<h3 align="center"><a href="https://twitter.com/const_shiv" ><img src="https://img.shields.io/twitter/follow/const_shiv.svg?style=social" /> </a></h3>
+### A Full-Stack Developer
+<h3 text-align="center"><a href="mailto:1983.shiv@gmail.com" >Let's Connect</a></h3>
 
 ---
 
