@@ -76,6 +76,18 @@ export const cancelSubscription = async (req, res, next) => {
             throw error;
         }
 
+        if (subscription.status === "expired") {
+            const error = new Error("Subscription has already expired.");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        if (subscription.status === "cancelled") {
+            const error = new Error("Subscription has already cancelled");
+            error.statusCode = 404;
+            throw error;
+        }
+
         // Check if the logged-in user is the owner of the subscription
         if (subscription.user.toString() !== req.user._id.toString()) {
             const error = new Error("You are not authorized to cancel this subscription");
@@ -128,6 +140,124 @@ export const getUpcomingRenewals = async (req, res, next) => {
         next(error);
     }
 };
+
+export const renewSubscription = async (req, res, next) => {
+    try {
+        // Get subscription ID from URL params
+        const subscriptionId = req.params.id;
+
+        // Find the subscription by ID
+        const subscription = await Subscription.findById(subscriptionId);
+
+        if (!subscription) {
+            const error = new Error("Subscription not found");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Check if the subscription is expired
+        if (subscription.status === "trial") {
+            const error = new Error("Cannot renew an trial subscription");
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // Calculate the new renewal date based on the current date
+        let newRenewalDate;
+        const currentDate = new Date();
+        const currentRenewalDate = subscription.renewalDate;
+        // If the user is renewing before the current renewal date
+        if (subscription.renewalDate > currentDate) {
+            // Renew the subscription from the current date (as they are renewing early)
+            switch (subscription.frequency) {
+                case "daily":
+                    // Add 1 day to the current renewal date
+                    newRenewalDate = new Date(currentRenewalDate.setDate(currentRenewalDate.getDate() + 1));
+                    break;
+                case "weekly":
+                    // Add 7 days to the current renewal date
+                    newRenewalDate = new Date(currentRenewalDate.setDate(currentRenewalDate.getDate() + 7));
+                    break;
+                case "monthly":
+                    // Add 1 month to the current renewal date
+                    newRenewalDate = new Date(currentRenewalDate.setMonth(currentRenewalDate.getMonth() + 1));
+                    break;
+                case "yearly":
+                    // Add 1 year to the current renewal date
+                    newRenewalDate = new Date(currentRenewalDate.setFullYear(currentRenewalDate.getFullYear() + 1));
+                    break;
+                default:
+                    newRenewalDate = currentRenewalDate; // Default case if no frequency is set (you can modify this based on your logic)
+                    break;
+            }
+        } else {
+            // If the renewal date has already passed, use the current date for renewal
+            switch (subscription.frequency) {
+                case "daily":
+                    newRenewalDate = new Date(currentDate.setDate(currentDate.getDate() + 1)); // Add 1 day
+                    break;
+                case "weekly":
+                    newRenewalDate = new Date(currentDate.setDate(currentDate.getDate() + 7)); // Add 7 days
+                    break;
+                case "monthly":
+                    newRenewalDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1)); // Add 1 month
+                    break;
+                case "yearly":
+                    newRenewalDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + 1)); // Add 1 year
+                    break;
+                default:
+                    newRenewalDate = currentDate; // If no frequency is set, renew immediately
+                    break;
+            }
+        }
+
+        // Update the subscription's renewal date and status (optional)
+        subscription.renewalDate = newRenewalDate;
+        subscription.status = "active"; // Optionally, set the status to 'active' if it was 'expired'
+
+        // Save the updated subscription
+        await subscription.save();
+
+        // Respond with the updated subscription
+        res.status(200).json({
+            success: true,
+            message: "Subscription renewed successfully",
+            data: subscription
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const changeSubscriptionPlan = async (req, res, next) => {
+    try {
+        const subscriptionId = req.params.id;
+        const { newPlan } = req.body;
+
+        const subscription = await Subscription.findById(subscriptionId);
+
+        if (!subscription) {
+            const error = new Error("Subscription not found");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        subscription.plan = newPlan;  // Change the subscription plan
+        await subscription.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Subscription plan changed successfully",
+            data: subscription
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
 
 
 
